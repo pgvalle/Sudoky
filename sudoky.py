@@ -38,7 +38,7 @@ class Sudoku:
         return candidates
 
     def __solve(self, start) -> bool:
-        # go through all squares
+        # go through all squares.
         for i in range(start, 81):
             # we don't care about filled squares. Just skip.
             if self.__matrix[i] != 0:
@@ -46,15 +46,16 @@ class Sudoku:
             
             candidates = self.__candidates(i)
 
-            # for each candidate, place it in the square and go forward with the solve
+            # for each candidate, place it in the square and go forward.
             for candidate in candidates:
                 self.__matrix[i] = candidate
 
-                # Further solves were correct. Then, this one is correct. Return True
+                # Further solves were correct. Then, this one is correct. Return True.
                 if self.__solve(start=i + 1):
                     return True
+                # Further solves incorrect. Try another candidate.
             
-            # No more candidates to test. Solve failed. Reset square value and go back
+            # No more candidates to test. Solve failed. Reset square value and go back.
             self.__matrix[i] = 0
             return False
 
