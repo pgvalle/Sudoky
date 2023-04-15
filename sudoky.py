@@ -1,101 +1,77 @@
+import random
+
 class Sudoku:
-    def __init__(self) -> None:
-        self.__matrix = [0 for _ in range(81)]
-    
-    def __in_row(self, number, i) -> bool:
-        row_start = i // 9 * 9
-        return number in self.__matrix[row_start:row_start+9]
+    def __init__(self):
+        self._matr = [[0 for _ in range(9)] for _ in range(9)]
 
-    def __in_column(self, number, i) -> bool:
-        col_start = i % 9
-        return number in self.__matrix[col_start:81:9]
-    
-    def __in_quad(self, number, i) -> bool:
-        row = i // 9 // 3 * 3
-        col = i % 9 // 3 * 3
 
-        for r in range(row, row + 3):
-            for c in range(col, col + 3):
-                if number == self.__matrix[9 * r + c]:
+    def _n_in_row(self, n, i):
+        return n in self._matr[i]
+
+
+    def _n_in_col(self, n, j):
+        return n in [row[j] for row in self._matr]
+
+
+    def _n_in_quad(self, n, i, j):
+        i = (i // 3) * 3
+        j = (j // 3) * 3
+        for k in range(i, i + 3):
+            for l in range(j, j + 3):
+                if self._matr[k][l] == n:
                     return True
-        
         return False
 
-    def __candidates(self, i) -> list:
-        numbers = [n for n in range(1, 10)]
+
+    def _candidates(self, i, j):
         candidates = []
+        for n in range(1, 10):
+            if self._n_in_row(n, i):
+                continue
+            if self._n_in_col(n, j):
+                continue
+            if self._n_in_quad(n, i, j):
+                continue
 
-        for number in numbers:
-            if self.__in_row(number, i):
-                continue
-            if self.__in_column(number, i):
-                continue
-            if self.__in_quad(number, i):
-                continue
-
-            candidates.append(number)
+            candidates.append(n)
 
         return candidates
 
-    def __solve(self, start) -> bool:
-        # go through all squares.
-        for i in range(start, 81):
-            # we don't care about filled squares. Just skip.
-            if self.__matrix[i] != 0:
-                continue
-            
-            candidates = self.__candidates(i)
 
-            # for each candidate, place it in the square and go forward.
-            for candidate in candidates:
-                self.__matrix[i] = candidate
+    def _solve(self, i, j):
+        for k in range(i, 9):
+            for l in range(j, 9):
+                # cell not empty, just ignore it
+                if self._matr[k][l] != 0:
+                    continue
+                
+                candidates = self._candidates(k, l)
+                for n in candidates:
+                    self._matr[k][l] = n
+                    if self._solve(k, l + 1):
+                        return True
 
-                # Further solves were correct. Then, this one is correct. Return True.
-                if self.__solve(start=i + 1):
-                    return True
-                # Further solves incorrect. Try another candidate.
-            
-            # No more candidates to test. Solve failed. Reset square value and go back.
-            self.__matrix[i] = 0
-            return False
+                # No more candidates to test. Solve failed. Reset square value and go back.
+                self._matr[k][l] = 0
+                return False
+
+            j = 0 # next row start from the beginning
 
         # Solved :D
         return True
 
-    def solve(self) -> None:
-        if not self.__solve(start=0):
-            raise ValueError("Sudoku is impossible")
+
+    def solve(self):
+        return self._solve(0, 0)
+
 
     # TODO: Fancy formatting for displaying sudoku matrix
     def print(self) -> None:
-        for r in range(0, 9):
-            for c in range(0, 9):
-                print(self.__matrix[9 * r + c], end=" ")
+        for i in range(0, 9):
+            for j in range(0, 9):
+                print(self._matr[i][j], end=" ")
             print()
         print("---------------------")
 
-    def load_file(self, rpath) -> bool:
-        import os
-        path = os.path.join(os.getcwd(), rpath)
-
-        if not os.path.exists(path):
-            return False
-
-        file = open(path, "r")
-        i = 0
-
-        for value in file.read().split():
-            if value != "\n":
-                self.__matrix[i] = int(value)
-                i += 1
-
-        return True
-
 if __name__ == "__main__":
     sudoku = Sudoku()
-    sudoku.load_file("assets/s01a.txt")
-    sudoku.print()
-
-    sudoku.solve()
-
-    sudoku.print()
